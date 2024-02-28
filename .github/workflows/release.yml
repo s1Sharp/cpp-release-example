@@ -1,0 +1,74 @@
+name: 'C++ CI'
+
+on:
+  push:
+    tags:
+      - v[1].[0-9]+.[0-9]+
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: ubuntu-20.04
+          - os: ubuntu-22.04
+
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Extract version from tag
+        uses: damienaicheh/extract-version-from-tag-action@v1.1.0
+
+      - run: |
+          cmake . -B static \
+              -DMAJOR_VERSION=${{ env.MAJOR }} \
+              -DMINOR_VERSION=${{ env.MINOR }} \
+              -DPATCH_VERSION=${{ env.PATCH }} \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DOS_SYSTEM_NAME=${{ matrix.os }} \
+              -DBUILD_SHARED_LIB=OFF
+      - run: |
+          cmake . -B shared \
+              -DMAJOR_VERSION=${{ env.MAJOR }} \
+              -DMINOR_VERSION=${{ env.MINOR }} \
+              -DPATCH_VERSION=${{ env.PATCH }} \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DOS_SYSTEM_NAME=${{ matrix.os }} \
+              -DBUILD_SHARED_LIB=ON
+
+      - run: cmake --build static --target all
+      - run: cmake --build static --target fancy-test
+      - run: cd static/test && ctest
+      - run: cmake --build static --target package
+
+      - run: cmake --build shared --target all
+      - run: cmake --build shared --target fancy-test
+      - run: cd shared/test && ctest
+      - run: cmake --build shared --target package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fancy-app-example-static-${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.os }}.deb
+          path: static/_packages
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fancy-app-example-shared-${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.os }}.deb
+          path: shared/_packages
+          if-no-files-found: error
+
+      - uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          token: ${{ github.token }}
+          files: |
+            static/_packages/fancy-app-example-static-${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.os }}.deb
+            shared/_packages/fancy-app-example-shared-${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}-${{ matrix.os }}.deb

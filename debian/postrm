@@ -1,0 +1,24 @@
+#!/bin/sh
+# postrm script for fancy
+#
+# see: dh_installdeb(1)
+
+set -e
+ldconfig
+
+case "$1" in
+    purge|remove|abort-install|disappear)
+        # rm -rf /var/log/app
+        # or do some other things
+    ;;
+
+    upgrade|failed-upgrade|abort-upgrade)
+    ;;
+
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0
