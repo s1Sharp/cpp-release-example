@@ -17,6 +17,13 @@ set_target_properties(
         CXX_STANDARD_REQUIRED ON
 )
 
+find_package(fmt REQUIRED)
+
+target_link_libraries(fancy-lib 
+    PRIVATE
+        fmt::fmt
+)
+
 # Add headers to private sources for better support in IDEs.
 # Исходные файлы библиотеки
 target_sources(

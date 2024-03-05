@@ -1,5 +1,14 @@
 .PHONY: test build
 
+conan_conf:
+	conan profile detect --force
+	conan install . --build=missing -pr conan_debug_profile.txt -c tools.system.package_manager:mode=install
+	cmake --preset conan-debug
+
+build_conan:
+	cmake --build ./build/Debug --target fancy-test
+	cmake --build ./build/Debug --target fancy-test
+
 config:
 	cmake -B ./build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIB=OFF
 
@@ -22,6 +31,10 @@ pack:
 test: build
 	cmake --build ./build --target fancy-test
 	cd build/test && ctest
+
+test_conan: build_conan
+	cmake --build ./build/Debug --target fancy-test
+	cd build/Debug/test && ctest
 
 clean:
 	rm -rf build/
