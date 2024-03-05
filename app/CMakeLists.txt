@@ -38,4 +38,6 @@ else()
     )
 endif()
 
+# Qt Gui app
 
+add_subdirectory(gui)
