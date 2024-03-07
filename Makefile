@@ -1,10 +1,10 @@
 .PHONY: test build
 
 config:
-	cmake -B ./build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIB=OFF
+	cmake -B ./build -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIB=OFF
 
 config_shared:
-	cmake -B ./build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIB=ON
+	cmake -B ./build -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIB=ON
 
 build_shared: config_shared
 	cmake --build ./build --target all --config Debug

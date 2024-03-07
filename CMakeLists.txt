@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.16...3.24)
 
 set(MAJOR_VERSION "1" CACHE INTERNAL "Major version")
 set(MINOR_VERSION "1" CACHE INTERNAL "Minor version")
@@ -26,7 +26,12 @@ add_subdirectory(test EXCLUDE_FROM_ALL)
 
 
 #### INSTALL PART ####
-install(TARGETS fancy-app RUNTIME DESTINATION bin)
+install(
+    TARGETS
+        fancy-gui 
+    RUNTIME
+        DESTINATION bin
+)
 
 # Устанавливаем папку для установки .so файлов
 if(BUILD_SHARED_LIB)
