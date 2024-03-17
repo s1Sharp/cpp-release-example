@@ -1,25 +1,22 @@
 cmake_minimum_required(VERSION 3.13)
 
-set(EXECUTABLE_NAME async_server)
+set(EXECUTABLE_NAME server)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_FLAGS "-Wall -O3")
 
-add_definitions(-DBOOST_LOG_DYN_LINK)
-find_package(Boost COMPONENTS REQUIRED
-    log
-    program_options
-    system)
-find_package(Threads)
-
-add_executable(${EXECUTABLE_NAME}
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/tcp_server.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/acceptor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/service.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/server_base.cpp
+include_directories(
+	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(${EXECUTABLE_NAME}
-    ${Boost_LIBRARIES})
+set(SOURCES
+	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+)
 
-install(TARGETS ${EXECUTABLE_NAME} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin)
+add_executable(${EXECUTABLE_NAME} ${SOURCES})
+
+find_package(Boost REQUIRED system thread)
+find_package(spdlog REQUIRED)
+
+target_link_libraries(${EXECUTABLE_NAME} fancy-ser ${Boost_LIBRARIES} spdlog::spdlog)

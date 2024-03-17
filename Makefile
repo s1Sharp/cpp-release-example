@@ -27,7 +27,7 @@ clean:
 	rm -rf build/
 
 cli:
-	./build/app/db/client/async_client localhost
+	./build/app/db/client/client localhost
 
 ser:
-	./build/app/db/server/async_server
+	./build/app/db/server/server

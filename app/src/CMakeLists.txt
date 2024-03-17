@@ -17,7 +17,7 @@ if(BUILD_SHARED_LIB)
     target_link_libraries(
             fancy-app
         PRIVATE
-            fancy-lib
+            fancy-version
     )
 else()
     set_target_properties(fancy-app PROPERTIES LINK_SEARCH_START_STATIC ON)
@@ -34,6 +34,6 @@ else()
     target_link_libraries(
             fancy-app
         PRIVATE
-            fancy-lib
+            fancy-version
     )
 endif()

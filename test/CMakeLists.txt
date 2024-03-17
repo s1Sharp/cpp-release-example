@@ -23,13 +23,13 @@ target_compile_features(fancy-test
 
 target_sources(fancy-test
     PRIVATE
-        src/test_fancy_function.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test_fancy_function.cpp
 )
 
 target_link_libraries(fancy-test
     PRIVATE
         GTest::gtest_main
-        fancy-lib
+        fancy-version
 )
 
 include(GoogleTest)

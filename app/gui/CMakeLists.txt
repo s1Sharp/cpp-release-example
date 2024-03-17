@@ -29,6 +29,6 @@ set_target_properties(
 target_link_libraries(
         fancy-gui
     PRIVATE
-        fancy-lib
+        fancy-version
         Qt5::Widgets
 )
