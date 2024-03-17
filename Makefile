@@ -25,3 +25,9 @@ test: build
 
 clean:
 	rm -rf build/
+
+cli:
+	./build/app/db/client/async_client localhost
+
+ser:
+	./build/app/db/server/async_server
