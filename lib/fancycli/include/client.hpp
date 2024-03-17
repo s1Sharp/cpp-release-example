@@ -19,6 +19,8 @@ private:
 	bool process() noexcept;
 	void disconnect() noexcept;
 
+	void handle_error(const boost::system::error_code& error);
+
 	io_service m_io_service;
 	tcp::endpoint m_endpoint;
 	tcp::socket m_socket;

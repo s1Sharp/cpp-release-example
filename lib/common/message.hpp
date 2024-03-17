@@ -41,6 +41,8 @@ public:
 			{
 			case type_t::invalid:
 				return "invalid";
+			case type_t::ping:
+				return "ping";
 			case type_t::welcome:
 				return "welcome";
 			case type_t::command_request:
@@ -60,6 +62,7 @@ public:
 			switch (get_type())
 			{
 			case type_t::welcome:
+			case type_t::ping:
 			case type_t::command_request:
 			case type_t::command_response:
 			case type_t::exit:

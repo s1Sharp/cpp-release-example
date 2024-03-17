@@ -15,6 +15,13 @@ using boost::asio::io_service;
 using boost::asio::ip::tcp;
 using boost::system::error_code;
 
+struct session_observer {
+	void addSession(session_t::client_identity_t ci, shared_ptr<session_t> session);
+	void removeSession(session_t::client_identity_t ci, shared_ptr<session_t> session);
+private:
+	std::map< session_t::client_identity_t, shared_ptr<session_t> > m_client_identities;
+};
+
 class server_t final
 {
 public:
@@ -25,6 +32,8 @@ public:
 
 	bool start() noexcept;
 	void stop() noexcept;
+
+	session_observer& obs();
 
 private:
 	void worker_thread_callback(shared_ptr<io_service> ios) noexcept;
@@ -40,7 +49,9 @@ private:
 	tcp::endpoint m_endpoint;
 	tcp::acceptor m_acceptor;
 
+	session_observer m_session_observer;
 	shared_ptr<session_t> m_session;
 
 	boost::asio::signal_set m_signals;
+
 };

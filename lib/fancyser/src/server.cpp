@@ -15,6 +15,21 @@ using boost::asio::ip::address;
 using boost::asio::placeholders::error;
 using boost::system::error_code;
 
+
+void session_observer::addSession(session_t::client_identity_t ci, boost::shared_ptr<session_t> session)
+{
+	m_client_identities.emplace(std::make_pair(ci, session));
+}
+
+void session_observer::removeSession(session_t::client_identity_t ci, boost::shared_ptr<session_t> session)
+{
+	spdlog::info("removeSession [{}:{}]", ci.client_ip, ci.client_port);
+	m_client_identities.erase(ci);
+	session->stop();
+	session.reset();
+}
+
+
 server_t::server_t(
 	const std::string ip, const unsigned short port,
 	const unsigned short num_threads) noexcept
@@ -24,7 +39,7 @@ server_t::server_t(
 	  m_ios_work_executors{boost::make_shared<io_service::work>(*m_ios_executors)},
 	  m_endpoint{address::from_string(ip), port},
 	  m_acceptor{*m_ios_acceptors, m_endpoint},
-	  m_session{boost::make_shared<session_t>(m_ios_executors)},
+	  m_session{boost::make_shared<session_t>(m_ios_executors, this)},
 	  m_signals{*m_ios_acceptors, SIGINT, SIGTERM}
 {
 	// Add signal handling for graceful termination (CTRL + C)
@@ -65,6 +80,7 @@ bool server_t::start() noexcept
 
 void server_t::stop() noexcept
 {
+	spdlog::error("resived signal to stop");
 	if (!m_ios_acceptors->stopped())
 	{
 		m_ios_acceptors->stop();
@@ -76,6 +92,10 @@ void server_t::stop() noexcept
 		m_executors_thread_group.interrupt_all();
 		m_executors_thread_group.join_all();
 	}
+}
+session_observer& server_t::obs()
+{
+	return m_session_observer;
 }
 
 // Utility methods
@@ -100,7 +120,12 @@ void server_t::accept_handler(boost::shared_ptr<session_t> this_session, const e
 
 		m_ios_executors->post(boost::bind(&session_t::start, this_session));
 
-		m_session = boost::make_shared<session_t>(m_ios_executors);
+		const session_t::client_identity_t client_identity{client_ip, client_port};
+		this_session->setIdentity(client_identity);
+		m_session_observer.addSession(client_identity, this_session);
+		spdlog::info("new client connected [{}:{}]", client_ip, client_port);
+		m_session = boost::make_shared<session_t>(m_ios_executors, this);
+
 		m_acceptor.async_accept(m_session->get_socket(),
 								boost::bind(&server_t::accept_handler, this, m_session, error));
 	}

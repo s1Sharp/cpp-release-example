@@ -1,3 +1,5 @@
+#include <thread>
+
 #include "spdlog/spdlog.h"
 
 #include "client.hpp"
@@ -50,38 +52,50 @@ bool client_t::connect() noexcept
 
 bool client_t::process() noexcept
 {
-	// Receive welcome message
-	spdlog::info("receiving welcome message from server");
-	const auto welcome_msg = recv(m_socket);
-	if (welcome_msg.get_header().get_type() != message_t::type_t::welcome)
-	{
-		spdlog::info("invalid welcome message type, {}", welcome_msg.dump());
-		return false;
-	}
-	spdlog::info("welcome message received, {}", welcome_msg.dump());
+	std::thread([this]() {
+		int sec = 1;
+		while(true) {
+			std::this_thread::sleep_for(std::chrono::seconds(sec));
+			message_t cmd_request_msg;
+			cmd_request_msg.set(message_t::type_t::ping, "ping");
+			spdlog::info("sending command request [{}]", cmd_request_msg.dump());
+			if (!send(m_socket, cmd_request_msg))
+			{
+				spdlog::error("error while sending ping");
+				return false;
+			}
+			spdlog::info("command ping sent {}", std::to_string(sec));
+			sec++;
+		}
+	}).detach();
 
-	// Send command request message
-	const auto cmd = "ls test";
-	message_t cmd_request_msg;
-	cmd_request_msg.set(message_t::type_t::command_request, cmd);
-	spdlog::info("sending command request [{}]", cmd_request_msg.dump());
-	if (!send(m_socket, cmd_request_msg))
-	{
-		spdlog::error("error while sending command request");
-		return false;
-	}
-	spdlog::info("command request sent");
+	while(true) {
+		// Receive welcome message
+		spdlog::info("receiving welcome message from server");
+		error_code e;
+		const auto welcome_msg = recv(m_socket, e);
+		if (e) {
+			handle_error(e);
+			return false;
+		}
+		spdlog::info("welcome message received, {}", welcome_msg.dump());
 
-	// Receive command response message
-	spdlog::info("receiving command response from server");
-	const auto cmd_response_msg = recv(m_socket);
-	if (cmd_response_msg.get_header().get_type() != message_t::type_t::command_response)
-	{
-		spdlog::info("invalid command response type, {}", cmd_response_msg.dump());
-		return false;
-	}
-	spdlog::info("command response received: {}", cmd_response_msg.dump());
+		// Send command request message
+		const auto cmd = "ls test";
+		message_t cmd_request_msg;
+		cmd_request_msg.set(message_t::type_t::command_request, cmd);
+		spdlog::info("command request sent");
 
+		// Receive command response message
+		spdlog::info("receiving command response from server");
+		const auto cmd_response_msg = recv(m_socket, e);
+		if (e) {
+			handle_error(e);
+			return false;
+		}
+		spdlog::info("command response received: {}", cmd_response_msg.dump());
+
+	}
 	// Send EXIT message
 	message_t exit_msg;
 	exit_msg.set(message_t::type_t::exit, "EXIT");
@@ -103,5 +117,19 @@ void client_t::disconnect() noexcept
 	{
 		m_socket.close();
 		spdlog::info("disconnected");
+	}
+}
+
+void client_t::handle_error(const boost::system::error_code& error)
+{
+	if (error == boost::asio::error::eof)
+	{
+		// End of file reached
+		spdlog::info("End of file reached, client disconnected");
+	}
+	else if (error)
+	{
+		// Some other error occurred
+		spdlog::info("Unknown error: {}", error.what());
 	}
 }

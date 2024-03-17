@@ -20,17 +20,23 @@ unsigned short get_peer_port(const tcp::socket &socket) noexcept
 	return socket.remote_endpoint().port();
 }
 
-message_t recv(tcp::socket &socket) noexcept
+message_t recv(tcp::socket &socket, error_code& e) noexcept
 {
 	spdlog::debug("receiving message");
 
 	message_t::header_t header;
 
-	error_code ec;
+	error_code& ec = e;
 	read(socket, buffer(&header, sizeof(header)), transfer_exactly(sizeof(header)), ec);
 	if (ec)
 	{
 		spdlog::error("header read error, {}", ec.message());
+		if (ec == boost::asio::error::eof)
+		{
+	
+			spdlog::error("End of file reached");
+			return {};
+		}
 		return {};
 	}
 
