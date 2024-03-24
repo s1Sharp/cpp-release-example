@@ -19,4 +19,11 @@ add_executable(${EXECUTABLE_NAME} ${SOURCES})
 find_package(Boost REQUIRED system thread)
 find_package(spdlog REQUIRED)
 
-target_link_libraries(${EXECUTABLE_NAME} fancy-ser ${Boost_LIBRARIES} spdlog::spdlog)
+set(REDIS_PLUS_PLUS_STATIC_LIB_PATH redis++::redis++_static)
+message("REDIS_PLUS_PLUS_STATIC_LIB_PATH ${REDIS_PLUS_PLUS_STATIC_LIB_PATH}")
+target_link_libraries(${EXECUTABLE_NAME} fancy-ser
+	${Boost_LIBRARIES}
+	spdlog::spdlog
+	redis++::redis++_static
+	hiredis::hiredis_static
+)

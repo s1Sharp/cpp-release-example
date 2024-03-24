@@ -1,5 +1,8 @@
 #include <sstream>
-#include "spdlog/spdlog.h"
+
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <spdlog/spdlog.h>
+
 #include "server.hpp"
 #include "session.hpp"
 #include "message.hpp"
@@ -33,8 +36,24 @@ void session_t::stop() noexcept
 {
 	if (m_socket.is_open())
 	{
-		m_socket.shutdown(boost::asio::socket_base::shutdown_both);
-		m_socket.close();
+		boost::system::error_code ec;
+
+		spdlog::info("shutdown socket {}", std::string(getIdentity()));
+		
+		if (m_socket.available())
+			m_socket.shutdown(boost::asio::socket_base::shutdown_both, ec);
+		if (ec) {
+			handle_error(ec);
+			ec.clear();
+		}
+
+		spdlog::info("close socket {}", std::string(getIdentity()));
+		if (m_socket.is_open())
+			m_socket.close(ec);
+		if (ec) {
+			handle_error(ec);
+			ec.clear();
+		}
 	}
 }
 
@@ -88,9 +107,9 @@ bool session_t::process() noexcept
 		{
 			if (msg.get_header().is_valid()) {
 				post_check_ping();
-				spdlog::info("command processing completed");
+				spdlog::info("command ping processing completed");
 			} else {
-				spdlog::info("command processing failed, incorrect message header");
+				spdlog::info("command ping processing failed, incorrect message header");
 			}
 		}
 		else
@@ -129,6 +148,7 @@ void session_t::on_check_ping() noexcept
 	}
 
 	m_last_ping = boost::posix_time::microsec_clock::local_time();
+    spdlog::debug("set last time {} for {}", boost::posix_time::to_simple_string(m_last_ping), std::string(getIdentity()));
 	spdlog::info("on_check_ping");
 }
 
@@ -178,6 +198,8 @@ bool session_t::process_command(const std::string &cmd) noexcept
 
 	const auto exit_status = std::system(cmd.data());
 	const auto cmd_response_payload = (exit_status == 0 ? "SUCCESS" : "FAILURE");
+
+	// m_server_ptr->db_service->process_command(cmd);
 
 	spdlog::info("sending command response message");
 	message_t cmd_response_msg;

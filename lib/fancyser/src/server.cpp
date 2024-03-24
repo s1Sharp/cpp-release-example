@@ -1,4 +1,5 @@
 #include <exception>
+#include <memory>
 
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/bind.hpp>
@@ -7,7 +8,9 @@
 #include <boost/system/error_code.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
+
+#include "db_service.hpp"
 #include "server.hpp"
 #include "utils.hpp"
 
@@ -69,6 +72,10 @@ server_t::server_t(
 	m_acceptor.async_accept(m_session->get_socket(),
 							boost::bind(&server_t::accept_handler, this, m_session, error));
 
+	I_KVDB_service* redisDb = new RedisDbService("rediss://default:AVNS_6shzZWqRMRCG3EXt3ul@redis-s1sharp-s1sharp.aivencloud.com:20993", "");
+	m_db_service = boost::make_shared<DbServiceWrapper>(redisDb);
+	m_db_service->executeCommand("set key value");
+
 	spdlog::info("started, press CTRL+C to quit");
 }
 
@@ -94,13 +101,13 @@ void server_t::stop() noexcept
 {
 	if (!m_ios_acceptors->stopped())
 	{
-		spdlog::error("resived signal to stop2");
+		spdlog::error("resived signal to stop acceptors");
 		m_ios_acceptors->stop();
 	}
 
 	if (!m_ios_executors->stopped())
 	{
-		spdlog::error("resived signal to stop3");
+		spdlog::error("resived signal to stop executors");
 		m_ios_executors->stop();
 		m_session_observer.stopObserve();
 		m_executors_thread_group.interrupt_all();

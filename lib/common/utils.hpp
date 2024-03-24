@@ -1,4 +1,5 @@
-#pragma once
+#ifndef UTILS_HPP
+#define UTILS_HPP
 
 #include <string>
 #include <boost/asio.hpp>
@@ -16,3 +17,5 @@ message_t recv(tcp::socket &socket, error_code& e) noexcept;
 bool send(tcp::socket &socket, const message_t &message) noexcept;
 
 }
+
+#endif

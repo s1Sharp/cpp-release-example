@@ -38,3 +38,5 @@ build/
 cmake-build-debug
 _packages
 .tmp
+.cli
+log/

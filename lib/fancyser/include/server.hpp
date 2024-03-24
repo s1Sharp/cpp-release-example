@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
@@ -7,6 +8,7 @@
 #include <boost/system/error_code.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
+#include "db_service.hpp"
 #include "session.hpp"
 
 using boost::enable_shared_from_this;
@@ -55,4 +57,7 @@ private:
 
 	boost::asio::signal_set m_signals;
 
+	shared_ptr<DbServiceWrapper> m_db_service;
 };
+
+#endif

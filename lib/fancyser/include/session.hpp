@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SESSION_HPP
+#define SESSION_HPP
 
 #include <string>
 #include <memory>
@@ -28,7 +29,7 @@ public:
 		{
 			return client_ip < rhs.client_ip && client_port < rhs.client_port;
 		}
-		operator std::string() const { return client_ip + std::to_string(client_port); }
+		explicit operator std::string() const { return client_ip + ":" + std::to_string(client_port); }
 
 		std::string client_ip;
 		uint16_t client_port;
@@ -65,3 +66,4 @@ private:
 	boost::posix_time::ptime m_last_ping;
 };
 
+#endif

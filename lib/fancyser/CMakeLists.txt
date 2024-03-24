@@ -25,6 +25,7 @@ target_sources(
 		${COMMON_SOURCE_FILE_LIST}
 		${CMAKE_CURRENT_SOURCE_DIR}/src/server.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/session.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/db_service.cpp
 )
 
 target_include_directories(
@@ -33,6 +34,12 @@ target_include_directories(
 		# where the library itself will look for its internal headers
 		${CMAKE_CURRENT_SOURCE_DIR}/src
 	PUBLIC
+		${HIREDIS_HEADER}
+		${redis_plus_plus_SOURCE_DIR}/src
+		${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/cxx11
+		${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/cxx17
+		${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/tls
+		${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/no_tls
 		# where top-level project will look for the library's public headers
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 		$<BUILD_INTERFACE:${COMMON_INCLUDE_FILE_LIST}>
@@ -41,7 +48,11 @@ target_include_directories(
 )
 
 # Link the spdlog library to your library
-target_link_libraries(${LIBRARY_NAME})
+target_link_libraries(${LIBRARY_NAME}
+
+redis++::redis++_static
+hiredis::hiredis_static)
+
 
 
 ### this one no need to include, we do application delivery, not shared libraries

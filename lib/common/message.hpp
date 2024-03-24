@@ -1,4 +1,6 @@
-#pragma once
+#ifndef MESSAGE_HPP
+#define MESSAGE_HPP
+
 
 #include <string>
 #include <sstream>
@@ -120,3 +122,5 @@ private:
 	header_t m_header{};
 	std::string m_payload{};
 };
+
+#endif

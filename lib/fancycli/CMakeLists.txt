@@ -24,6 +24,7 @@ target_sources(
 	PRIVATE
 		${COMMON_SOURCE_FILE_LIST}
 		${CMAKE_CURRENT_SOURCE_DIR}/src/client.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/reply_processor.cpp
 )
 
 target_include_directories(
@@ -40,7 +41,7 @@ target_include_directories(
 )
 
 # Link the spdlog library to your library
-target_link_libraries(${LIBRARY_NAME})
+target_link_libraries(${LIBRARY_NAME} cli::cli)
 
 
 ### this one no need to include, we do application delivery, not shared libraries
