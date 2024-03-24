@@ -5,6 +5,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "spdlog/spdlog.h"
 #include "server.hpp"
@@ -28,6 +29,17 @@ void session_observer::removeSession(session_t::client_identity_t ci, boost::sha
 	session->stop();
 	session.reset();
 }
+
+void session_observer::stopObserve()
+{
+	for (auto [ci, session] : m_client_identities) {
+		session->stop();
+		session.reset();
+		spdlog::info("stop observe session [{}:{}]", ci.client_ip, ci.client_port);
+	}
+	m_client_identities.clear();
+}
+
 
 
 server_t::server_t(
@@ -80,19 +92,22 @@ bool server_t::start() noexcept
 
 void server_t::stop() noexcept
 {
-	spdlog::error("resived signal to stop");
 	if (!m_ios_acceptors->stopped())
 	{
+		spdlog::error("resived signal to stop2");
 		m_ios_acceptors->stop();
 	}
 
 	if (!m_ios_executors->stopped())
 	{
+		spdlog::error("resived signal to stop3");
 		m_ios_executors->stop();
+		m_session_observer.stopObserve();
 		m_executors_thread_group.interrupt_all();
 		m_executors_thread_group.join_all();
 	}
 }
+
 session_observer& server_t::obs()
 {
 	return m_session_observer;
@@ -104,6 +119,7 @@ void server_t::worker_thread_callback(boost::shared_ptr<io_service> ios) noexcep
 {
 	error_code ec;
 	ios->run(ec);
+	spdlog::info("worker thread ended: thread id {}", boost::lexical_cast<std::string>(boost::this_thread::get_id()));
 	if (ec)
 	{
 		spdlog::error("callback error: {}", ec.message());
@@ -114,8 +130,8 @@ void server_t::accept_handler(boost::shared_ptr<session_t> this_session, const e
 {
 	if (!ec)
 	{
-		const auto client_ip = get_peer_ip(this_session->get_socket());
-		const auto client_port = get_peer_port(this_session->get_socket());
+		const auto client_ip = utils::get_peer_ip(this_session->get_socket());
+		const auto client_port = utils::get_peer_port(this_session->get_socket());
 		spdlog::info("new client connected [{}:{}]", client_ip, client_port);
 
 		m_ios_executors->post(boost::bind(&session_t::start, this_session));

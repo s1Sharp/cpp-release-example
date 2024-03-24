@@ -18,6 +18,7 @@ using boost::system::error_code;
 struct session_observer {
 	void addSession(session_t::client_identity_t ci, shared_ptr<session_t> session);
 	void removeSession(session_t::client_identity_t ci, shared_ptr<session_t> session);
+	void stopObserve();
 private:
 	std::map< session_t::client_identity_t, shared_ptr<session_t> > m_client_identities;
 };

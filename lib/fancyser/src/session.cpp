@@ -64,7 +64,7 @@ bool session_t::process() noexcept
 	{
 		spdlog::info("receiving command message from client");
 		error_code e;
-		const auto msg = recv(m_socket, e);
+		const auto msg = utils::recv(m_socket, e);
 		if (e) {
 			handle_error(e);
 			return false;
@@ -107,7 +107,7 @@ bool session_t::do_ping() noexcept
 {
 	message_t cmd_ping_msg;
 	cmd_ping_msg.set(message_t::type_t::ping, "ping");
-	if (!send(m_socket, cmd_ping_msg))
+	if (!utils::send(m_socket, cmd_ping_msg))
 	{
 		spdlog::error("error while sending ping message");
 		return false;
@@ -158,12 +158,12 @@ void session_t::handle_error(const boost::system::error_code& error)
 bool session_t::welcome_client() noexcept
 {
 	std::ostringstream oss;
-	oss << "Welcome! [" << get_peer_ip(m_socket) << ":" << get_peer_port(m_socket) << "]";
+	oss << "Welcome! [" << utils::get_peer_ip(m_socket) << ":" << utils::get_peer_port(m_socket) << "]";
 
 	message_t welcome_msg;
 	welcome_msg.set(message_t::type_t::welcome, oss.str());
 	spdlog::info("sending welcome message to client");
-	if (!send(m_socket, welcome_msg))
+	if (!utils::send(m_socket, welcome_msg))
 	{
 		spdlog::error("error while sending welcome message");
 		return false;
@@ -182,7 +182,7 @@ bool session_t::process_command(const std::string &cmd) noexcept
 	spdlog::info("sending command response message");
 	message_t cmd_response_msg;
 	cmd_response_msg.set(message_t::type_t::command_response, cmd_response_payload);
-	if (!send(m_socket, cmd_response_msg))
+	if (!utils::send(m_socket, cmd_response_msg))
 	{
 		spdlog::error("error while sending command response message");
 		return false;

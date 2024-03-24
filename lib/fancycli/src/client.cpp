@@ -59,7 +59,7 @@ bool client_t::process() noexcept
 			message_t cmd_request_msg;
 			cmd_request_msg.set(message_t::type_t::ping, "ping");
 			spdlog::info("sending command request [{}]", cmd_request_msg.dump());
-			if (!send(m_socket, cmd_request_msg))
+			if (!utils::send(m_socket, cmd_request_msg))
 			{
 				spdlog::error("error while sending ping");
 				return false;
@@ -73,7 +73,7 @@ bool client_t::process() noexcept
 		// Receive welcome message
 		spdlog::info("receiving welcome message from server");
 		error_code e;
-		const auto welcome_msg = recv(m_socket, e);
+		const auto welcome_msg = utils::recv(m_socket, e);
 		if (e) {
 			handle_error(e);
 			return false;
@@ -88,7 +88,7 @@ bool client_t::process() noexcept
 
 		// Receive command response message
 		spdlog::info("receiving command response from server");
-		const auto cmd_response_msg = recv(m_socket, e);
+		const auto cmd_response_msg = utils::recv(m_socket, e);
 		if (e) {
 			handle_error(e);
 			return false;
@@ -100,7 +100,7 @@ bool client_t::process() noexcept
 	message_t exit_msg;
 	exit_msg.set(message_t::type_t::exit, "EXIT");
 	spdlog::info("sending exit message to server [{}]", exit_msg.dump());
-	if (!send(m_socket, exit_msg))
+	if (!utils::send(m_socket, exit_msg))
 	{
 		spdlog::error("error while sending command request");
 		return false;
