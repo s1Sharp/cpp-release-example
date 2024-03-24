@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 3.13)
 
 set(EXECUTABLE_NAME server)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "-Wall -O3")
-
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -16,11 +12,16 @@ set(SOURCES
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
 
+set_target_properties(
+		${EXECUTABLE_NAME}
+	PROPERTIES
+		CXX_STANDARD 17
+		CXX_STANDARD_REQUIRED ON
+)
+
 find_package(Boost REQUIRED system thread)
 find_package(spdlog REQUIRED)
 
-set(REDIS_PLUS_PLUS_STATIC_LIB_PATH redis++::redis++_static)
-message("REDIS_PLUS_PLUS_STATIC_LIB_PATH ${REDIS_PLUS_PLUS_STATIC_LIB_PATH}")
 target_link_libraries(${EXECUTABLE_NAME} fancy-ser
 	${Boost_LIBRARIES}
 	spdlog::spdlog

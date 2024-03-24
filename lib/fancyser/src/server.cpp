@@ -43,8 +43,6 @@ void session_observer::stopObserve()
 	m_client_identities.clear();
 }
 
-
-
 server_t::server_t(
 	const std::string ip, const unsigned short port,
 	const unsigned short num_threads) noexcept

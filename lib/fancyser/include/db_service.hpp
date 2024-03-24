@@ -6,8 +6,6 @@
 #include <sstream>
 #include "sw/redis++/redis++.h"
 
-using namespace sw::redis;
-
 class I_KVDB_service {
 public:
     I_KVDB_service(const std::string& url, const std::string& pass) : m_url(url), m_password(pass) {}
@@ -33,7 +31,7 @@ public:
     ~RedisDbService() override;
 
 private:
-    Redis m_redis_client;
+    sw::redis::Redis m_redis_client;
 };
 
 class DbServiceWrapper {

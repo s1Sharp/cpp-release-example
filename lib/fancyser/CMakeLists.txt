@@ -28,31 +28,32 @@ target_sources(
 		${CMAKE_CURRENT_SOURCE_DIR}/src/db_service.cpp
 )
 
+set(EXTERNN_REDIS_CPLUS_INCLUDE_DIRS
+	${HIREDIS_HEADER}
+	${redis_plus_plus_SOURCE_DIR}/src
+	${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/cxx11
+	${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/cxx17
+	${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/tls
+	${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/no_tls
+)
+
 target_include_directories(
 		${LIBRARY_NAME}
 	PRIVATE
 		# where the library itself will look for its internal headers
 		${CMAKE_CURRENT_SOURCE_DIR}/src
 	PUBLIC
-		${HIREDIS_HEADER}
-		${redis_plus_plus_SOURCE_DIR}/src
-		${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/cxx11
-		${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/cxx17
-		${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/tls
-		${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/no_tls
+		${EXTERNN_REDIS_CPLUS_INCLUDE_DIRS}
 		# where top-level project will look for the library's public headers
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 		$<BUILD_INTERFACE:${COMMON_INCLUDE_FILE_LIST}>
+		$<BUILD_INTERFACE:${EXTERNN_REDIS_CPLUS_INCLUDE_DIRS}>
 		# where external projects will look for the library's public headers
 		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 # Link the spdlog library to your library
-target_link_libraries(${LIBRARY_NAME}
-
-redis++::redis++_static
-hiredis::hiredis_static)
-
+target_link_libraries(${LIBRARY_NAME})
 
 
 ### this one no need to include, we do application delivery, not shared libraries

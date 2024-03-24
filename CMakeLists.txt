@@ -33,7 +33,8 @@ include(FetchContent)
 FetchContent_Declare(
     cli
     GIT_REPOSITORY https://github.com/daniele77/cli.git
-    GIT_TAG v2.1.0
+    GIT_TAG 	   v2.1.0
+	SOURCE_DIR     cli
 )
 FetchContent_MakeAvailable(cli)
 
@@ -52,9 +53,10 @@ FetchContent_Declare(
   redis_plus_plus
   GIT_REPOSITORY https://github.com/sewenew/redis-plus-plus
   GIT_TAG        1.3.8
+  SOURCE_DIR     redis-plus-plus
 )
 
-set(REDIS_PLUS_PLUS_DEFAULT_CXX_STANDARD 17)
+set(REDIS_PLUS_PLUS_CXX_STANDARD 11)
 set(REDIS_PLUS_PLUS_BUILD_SHARED OFF)
 set(REDIS_PLUS_PLUS_BUILD_TEST OFF)
 # Pre-fill the include and library paths so that Redis++ does not search for them.
