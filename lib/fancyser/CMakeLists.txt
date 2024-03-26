@@ -31,9 +31,9 @@ target_sources(
 set(EXTERNN_REDIS_CPLUS_INCLUDE_DIRS
 	${HIREDIS_HEADER}
 	${redis_plus_plus_SOURCE_DIR}/src
-	${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/cxx11
+	# ${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/cxx17
 	${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/cxx17
-	${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/tls
+	# ${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/tls
 	${redis_plus_plus_SOURCE_DIR}/src/sw/redis++/no_tls
 )
 

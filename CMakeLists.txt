@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16...3.24)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "-Wall -O3")
+set(CMAKE_CXX_FLAGS "-Wall -O2")
 
 set(MAJOR_VERSION "1" CACHE INTERNAL "Major version")
 set(MINOR_VERSION "1" CACHE INTERNAL "Minor version")
@@ -56,7 +56,7 @@ FetchContent_Declare(
   SOURCE_DIR     redis-plus-plus
 )
 
-set(REDIS_PLUS_PLUS_CXX_STANDARD 11)
+set(REDIS_PLUS_PLUS_CXX_STANDARD 17)
 set(REDIS_PLUS_PLUS_BUILD_SHARED OFF)
 set(REDIS_PLUS_PLUS_BUILD_TEST OFF)
 # Pre-fill the include and library paths so that Redis++ does not search for them.

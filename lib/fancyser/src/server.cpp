@@ -1,5 +1,4 @@
 #include <exception>
-#include <memory>
 
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/bind.hpp>
@@ -70,7 +69,7 @@ server_t::server_t(
 	m_acceptor.async_accept(m_session->get_socket(),
 							boost::bind(&server_t::accept_handler, this, m_session, error));
 
-	I_KVDB_service* redisDb = new RedisDbService("rediss://default:AVNS_6shzZWqRMRCG3EXt3ul@redis-s1sharp-s1sharp.aivencloud.com:20993", "");
+	I_KVDB_service* redisDb = new RedisDbService("tcp://default:redispw@95.183.12.184:6379", "");
 	m_db_service = boost::make_shared<DbServiceWrapper>(redisDb);
 	m_db_service->executeCommand("set key value");
 
