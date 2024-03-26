@@ -27,6 +27,9 @@ if(BUILD_SHARED_LIB)
 	set(Boost_USE_STATIC_LIBS ON)
 endif()
 
+find_package(Boost REQUIRED system thread)
+find_package(spdlog REQUIRED)
+
 include(FetchContent)
 
 # Загрузка и сборка библиотеки CLI

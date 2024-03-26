@@ -19,9 +19,6 @@ set_target_properties(
 		CXX_STANDARD_REQUIRED ON
 )
 
-find_package(Boost REQUIRED system thread)
-find_package(spdlog REQUIRED)
-
 target_link_libraries(${EXECUTABLE_NAME} fancy-ser
 	${Boost_LIBRARIES}
 	spdlog::spdlog

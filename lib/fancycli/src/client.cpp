@@ -70,7 +70,7 @@ bool client_t::connect() noexcept
 		return false;
 	}
 	while(welcome_msg.get_header().get_type() != message_t::type_t::welcome) {
-		spdlog::info("expect recieving welcome message from server, but got another message type: {}", welcome_msg.get_header().get_type_as_string());
+		spdlog::warn("expect recieving welcome message from server, but got another message type: {}", welcome_msg.get_header().get_type_as_string());
 		welcome_msg = utils::recv(m_socket, e);
 		if (e) {
 			handle_error(e);
@@ -94,11 +94,21 @@ void client_t::run_thread_ping() noexcept
 			}
 			message_t cmd_request_msg;
 			cmd_request_msg.set(message_t::type_t::ping, "ping");
-			spdlog::info("sending command request [{}]", cmd_request_msg.dump());
-			if (!utils::send(m_socket, cmd_request_msg))
-			{
-				spdlog::error("error while sending ping");
-			}
+			spdlog::debug("sending command request [{}]", cmd_request_msg.dump());
+            try {
+                if (!utils::send(m_socket, cmd_request_msg))
+                {
+                    spdlog::error("error while sending ping");
+                }
+            } catch (const utils::BrokenPipeSocketException& bpe) {
+                std::cerr << "Error: " << bpe.what() << std::endl;
+                std::cerr << "Shutdown client" << std::endl;
+                ::exit(1);
+            } catch (const std::exception& e) {
+                std::cerr << "Fatal error: " << e.what() << std::endl;
+                ::exit(2);
+            }
+
 		}
 	});
 }
@@ -108,18 +118,17 @@ bool client_t::process_cmd_input(const std::string& cmd, std::string& response)
  	// Send command request message
     message_t cmd_request_msg;
     cmd_request_msg.set(message_t::type_t::command_request, cmd);
-    spdlog::info("sending command request [{}]", cmd_request_msg.dump());
+    spdlog::debug("sending command request [{}]", cmd_request_msg.dump());
     if (!utils::send(m_socket, cmd_request_msg))
     {
         spdlog::error("error while sending command request");
         return false;
     }
-    spdlog::info("command request sent");
+    spdlog::debug("command request sent");
 
     // Receive command response message
-    error_code e;
-
-    spdlog::info("receiving command response from server");
+    boost::system::error_code e;
+    spdlog::debug("receiving command response from server");
     auto cmd_response_msg = utils::recv(m_socket, e);
     if (e) {
         handle_error(e);
@@ -137,17 +146,17 @@ bool client_t::process_cmd_input(const std::string& cmd, std::string& response)
         spdlog::info("invalid command response type, {}", cmd_response_msg.dump());
         return false;
     }
-    spdlog::info("command response received: {}", cmd_response_msg.dump());
+    spdlog::debug("command response received: {}", cmd_response_msg.dump());
 
-	response = cmd_response_msg.dump();
+	response = cmd_response_msg.get_payload();
 	return true;
 }
 
-class ICommand {
+class IFancyCommand {
 
 };
 // a custom struct to be used as a user-defined parameter type
-struct FancyCommand : ICommand
+struct SetFancyCommand : public IFancyCommand
 {
     // [[nodiscard]] std::string to_string() const {
 	// 	return m_command + std::accumulate(m_command_args.begin(), m_command_args.end(), std::string(),
@@ -155,22 +164,46 @@ struct FancyCommand : ICommand
 	// 											return a + (a.empty() ? "" : " ") + b;
 	// 										});
 	// }
-	FancyCommand(std::string key, std::string value) : m_command("set"), m_key(key), m_value(value) {}
+	SetFancyCommand(std::string key, std::string value) : m_command("set"), m_key(key), m_value(value) {}
 
     [[nodiscard]] std::string to_string() const {
 		return m_command + " " + m_key + " " + m_value;
 	}
-    friend std::istream & operator >> (std::istream &in, FancyCommand& p);
+    friend std::istream & operator >> (std::istream &in, SetFancyCommand& p);
 private:
     std::string m_command;
     std::string m_key;
     std::string m_value;
 };
 
-std::istream &operator>>(std::istream &in, FancyCommand &p) {
+struct GetFancyCommand : public IFancyCommand
+{
+	GetFancyCommand(std::string key) : m_command("get"), m_key(key) {}
+
+    [[nodiscard]] std::string to_string() const {
+		return m_command + " " + m_key;
+	}
+    friend std::istream & operator >> (std::istream &in, GetFancyCommand& p);
+private:
+    std::string m_command;
+    std::string m_key;
+};
+
+std::istream &operator>>(std::istream &in, SetFancyCommand &p) {
     in >> p.m_command;
 	in >> p.m_key;
 	in >> p.m_value;
+    // while(in) {
+    //     std::string sw;
+    //     in >> sw;
+    //     p.m_command_args.emplace_back(std::move(sw));
+    // }
+    return in;
+}
+
+std::istream &operator>>(std::istream &in, GetFancyCommand &p) {
+    in >> p.m_command;
+	in >> p.m_key;
     // while(in) {
     //     std::string sw;
     //     in >> sw;
@@ -190,15 +223,26 @@ bool client_t::process() noexcept
     auto rootMenu = std::make_unique<Menu>("cli");
     rootMenu->Insert(
 		"set",
-		[this](std::ostream& out, std::string key, std::string value) {
-			FancyCommand x(key, value);
-			out << "You entered FancyCommand: " << x.to_string() << "\n";
+		[this](std::ostream& out, std::string key_, std::string value_) {
+			SetFancyCommand x(key_, value_);
 			std::string response;
 			process_cmd_input(x.to_string(), response);
-			out << "You response FancyCommand: " << response << "\n";
+			out << response << "\n";
 		},
-		"Custom type",
+		"Command to set key to storage",
 		{"key", "value"}
+    );
+
+    rootMenu->Insert(
+		"get",
+		[this](std::ostream& out, std::string key_) {
+			GetFancyCommand x(key_);
+			std::string response;
+			process_cmd_input(x.to_string(), response);
+			out << response << "\n";
+		},
+		"Command to get key from storage",
+		{"key"}
     );
 
     Cli cli( std::move(rootMenu), std::make_unique<cli::FileHistoryStorage>(".cli") );
@@ -284,6 +328,6 @@ void client_t::handle_error(const boost::system::error_code& error)
 	else if (error)
 	{
 		// Some other error occurred
-		spdlog::info("Unknown error: {}", error.what());
+		spdlog::info("Unknown error: {}", error.message());
 	}
 }

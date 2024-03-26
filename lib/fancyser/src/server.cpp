@@ -1,4 +1,5 @@
 #include <exception>
+#include <cstdlib>
 
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/bind.hpp>
@@ -69,9 +70,13 @@ server_t::server_t(
 	m_acceptor.async_accept(m_session->get_socket(),
 							boost::bind(&server_t::accept_handler, this, m_session, error));
 
-	I_KVDB_service* redisDb = new RedisDbService("tcp://default:redispw@95.183.12.184:6379", "");
+
+	std::string fancy_redis_url = "tcp://default:redispw@localhost:6379";
+	if (const char* env_p = std::getenv("FANCY_REDIS_URL")) {
+		fancy_redis_url = env_p;
+	}
+	auto redisDb = boost::make_shared<RedisDbService>(fancy_redis_url, "");
 	m_db_service = boost::make_shared<DbServiceWrapper>(redisDb);
-	m_db_service->executeCommand("set key value");
 
 	spdlog::info("started, press CTRL+C to quit");
 }
@@ -115,6 +120,11 @@ void server_t::stop() noexcept
 session_observer& server_t::obs()
 {
 	return m_session_observer;
+}
+
+shared_ptr<DbServiceWrapper> server_t::GetDbService()
+{
+	return m_db_service;
 }
 
 // Utility methods

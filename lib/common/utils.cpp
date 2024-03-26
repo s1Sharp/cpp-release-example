@@ -5,6 +5,9 @@
 
 namespace utils {
 
+
+
+
 std::string get_peer_ip(const tcp::socket &socket) noexcept
 {
 	return socket.remote_endpoint().address().to_string();
@@ -15,7 +18,7 @@ unsigned short get_peer_port(const tcp::socket &socket) noexcept
 	return socket.remote_endpoint().port();
 }
 
-message_t recv(tcp::socket &socket, boost::system::error_code& e) noexcept
+message_t recv(tcp::socket &socket, boost::system::error_code& e)
 {
 	spdlog::debug("receiving message");
 
@@ -53,6 +56,12 @@ message_t recv(tcp::socket &socket, boost::system::error_code& e) noexcept
 	if (ec)
 	{
 		spdlog::error("payload read error, {}", ec.message());
+		// Проверка, является ли ошибка разрывом соединения
+		if (ec == boost::asio::error::connection_reset || ec == boost::asio::error::broken_pipe) {
+			// Закрытие сокета и завершение работы
+			socket.close();
+			throw BrokenPipeSocketException(ec.message());
+		}
 		return {};
 	}
 
@@ -64,7 +73,7 @@ message_t recv(tcp::socket &socket, boost::system::error_code& e) noexcept
 	return message;
 }
 
-bool send(tcp::socket &socket, const message_t &message) noexcept
+bool send(tcp::socket &socket, const message_t &message)
 {
 	spdlog::debug("sending message: {}", message.dump());
 
@@ -74,6 +83,14 @@ bool send(tcp::socket &socket, const message_t &message) noexcept
 	if (ec)
 	{
 		spdlog::error("header send error, {}", ec.message());
+
+		// Проверка, является ли ошибка разрывом соединения
+		if (ec == boost::asio::error::connection_reset || ec == boost::asio::error::broken_pipe) {
+			// Закрытие сокета и завершение работы
+			socket.close();
+			throw BrokenPipeSocketException(ec.message());
+		}
+
 		return false;
 	}
 

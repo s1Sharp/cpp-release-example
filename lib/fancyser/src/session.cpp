@@ -11,8 +11,9 @@
 session_t::session_t(shared_ptr<io_service> ios, server_t* server_ptr) noexcept
 	: m_io_service{ios},
 	  m_socket{*m_io_service},
+	  m_server_ptr{server_ptr},
 	  m_timer(*m_io_service),
-	  m_server_ptr{server_ptr}
+	  m_last_ping{boost::posix_time::min_date_time}
 {
 }
 
@@ -98,18 +99,18 @@ bool session_t::process() noexcept
 		{
 			if (!process_command(msg.get_payload()))
 			{
-				spdlog::info("error while process command request message");
+				spdlog::error("error while process command request message");
 				return false;
 			}
-			spdlog::info("command processing completed");
+			spdlog::debug("command processing completed");
 		}
 		else if (msg.get_header().get_type() == message_t::type_t::ping)
 		{
 			if (msg.get_header().is_valid()) {
 				post_check_ping();
-				spdlog::info("command ping processing completed");
+				spdlog::debug("command ping processing completed");
 			} else {
-				spdlog::info("command ping processing failed, incorrect message header");
+				spdlog::error("command ping processing failed, incorrect message header");
 			}
 		}
 		else
@@ -133,7 +134,7 @@ bool session_t::do_ping() noexcept
 	}
 	m_timer.expires_from_now(boost::posix_time::millisec(5000)); // Устанавливаем таймер на 5 секунд
 	m_timer.async_wait(boost::bind(&session_t::on_check_ping, shared_from_this()));
-	spdlog::info("do_ping");
+	spdlog::debug("do_ping");
 	return true;
 }
 
@@ -149,7 +150,7 @@ void session_t::on_check_ping() noexcept
 
 	m_last_ping = boost::posix_time::microsec_clock::local_time();
     spdlog::debug("set last time {} for {}", boost::posix_time::to_simple_string(m_last_ping), std::string(getIdentity()));
-	spdlog::info("on_check_ping");
+	spdlog::debug("on_check_ping");
 }
 
 void session_t::post_check_ping() noexcept
@@ -157,7 +158,7 @@ void session_t::post_check_ping() noexcept
 	// Перезапускаем таймер
 	m_timer.expires_from_now(boost::posix_time::millisec(5000));
 	m_timer.async_wait(boost::bind(&session_t::on_check_ping, shared_from_this()));
-	spdlog::info("post_check_ping");
+	spdlog::debug("post_check_ping");
 }
 
 void session_t::handle_error(const boost::system::error_code& error)
@@ -171,7 +172,7 @@ void session_t::handle_error(const boost::system::error_code& error)
 	else if (error)
 	{
 		// Some other error occurred
-		spdlog::info("Unknown error: {}", error.what());
+		spdlog::info("Unknown error: {}", error.message());
 	}
 }
 
@@ -194,14 +195,11 @@ bool session_t::welcome_client() noexcept
 
 bool session_t::process_command(const std::string &cmd) noexcept
 {
-	spdlog::info("processing command [{}]", cmd);
+	spdlog::debug("processing command [{}]", cmd);
+	auto cmd_response_payload = "#return: " 
+								+ m_server_ptr->GetDbService()->executeCommand(cmd);
 
-	const auto exit_status = std::system(cmd.data());
-	const auto cmd_response_payload = (exit_status == 0 ? "SUCCESS" : "FAILURE");
-
-	// m_server_ptr->db_service->process_command(cmd);
-
-	spdlog::info("sending command response message");
+	spdlog::debug("command response [{}]", cmd_response_payload);
 	message_t cmd_response_msg;
 	cmd_response_msg.set(message_t::type_t::command_response, cmd_response_payload);
 	if (!utils::send(m_socket, cmd_response_msg))
@@ -209,6 +207,6 @@ bool session_t::process_command(const std::string &cmd) noexcept
 		spdlog::error("error while sending command response message");
 		return false;
 	}
-	spdlog::info("command response message sent");
+	spdlog::debug("command response message sent successfully");
 	return true;
 }

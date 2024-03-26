@@ -40,6 +40,8 @@ public:
 
 	session_observer& obs();
 
+	shared_ptr<DbServiceWrapper> GetDbService();
+
 private:
 	void worker_thread_callback(shared_ptr<io_service> ios) noexcept;
 	void accept_handler(shared_ptr<session_t> this_session, const error_code &ec) noexcept;

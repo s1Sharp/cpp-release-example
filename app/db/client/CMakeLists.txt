@@ -16,8 +16,5 @@ set(SOURCES
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
 
-find_package(Boost REQUIRED system thread)
-find_package(spdlog REQUIRED)
-
 target_link_libraries(${EXECUTABLE_NAME} fancy-cli ${Boost_LIBRARIES} spdlog::spdlog cli::cli)
 
