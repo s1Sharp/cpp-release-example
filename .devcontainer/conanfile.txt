@@ -1,0 +1,2 @@
+[requires]
+fmt/5.3.0

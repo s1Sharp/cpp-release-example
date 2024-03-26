@@ -1,0 +1,32 @@
+{
+    "dockerComposeFile": ["docker-compose.yml"],
+    "service": "dev-env",
+    "workspaceFolder": "/workspace",
+    "remoteUser": "root",
+    "customizations": {
+        "vscode": {
+          "settings": {
+            "http.proxyStrictSSL": false,
+            "C_Cpp.default.includePath": ["/usr/include", "/workspace/**"],
+            "C_Cpp.default.cStandard": "c11",
+            "C_Cpp.default.cppStandard": "c++17",
+            "C_Cpp.default.intelliSenseMode": "gcc-x64",
+            "C_Cpp.updateChannel": "Default",
+            "clang-format.assumeFilename": "/workspace/.clang-format",
+            "clang-format.style": "Google",
+            "clang-format.fallbackStyle": "LLVM"
+          },
+          "extensions": [
+            "ms-vscode.cpptools",
+            "ms-vscode.cmake-tools",
+            "twxs.cmake",
+            "ryanluker.vscode-coverage-gutters",
+            "xaver.clang-format",
+            "mesonbuild.mesonbuild",
+            "mhutchie.git-graph",
+            "eamodio.gitlens",
+            "spmeesseman.vscode-taskexplorer",
+          ]
+        }
+    }
+}

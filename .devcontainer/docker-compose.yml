@@ -1,0 +1,28 @@
+version: "3.7"
+services:
+  dev-env:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+    volumes:
+      - ..:/workspace:z
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    working_dir: /workspace
+    environment:
+      - DISPLAY=${DISPLAY}
+      - CTEST_OUTPUT_ON_FAILURE=1
+      - GTEST_COLOR=1
+      - CMAKE_GENERATOR=Ninja
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    command: sleep infinity
