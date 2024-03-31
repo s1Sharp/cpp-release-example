@@ -23,10 +23,6 @@ project(
 		LANGUAGES CXX
 )
 
-if(BUILD_SHARED_LIB)
-	set(Boost_USE_STATIC_LIBS ON)
-endif()
-
 find_package(Boost REQUIRED system thread)
 find_package(spdlog REQUIRED)
 
@@ -38,6 +34,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/daniele77/cli.git
     GIT_TAG 	   v2.1.0
 	SOURCE_DIR     cli
+	EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(cli)
 
@@ -60,12 +57,20 @@ FetchContent_Declare(
 )
 
 set(REDIS_PLUS_PLUS_CXX_STANDARD 17)
-set(REDIS_PLUS_PLUS_BUILD_SHARED OFF)
 set(REDIS_PLUS_PLUS_BUILD_TEST OFF)
 # Pre-fill the include and library paths so that Redis++ does not search for them.
-set(CMAKE_INCLUDE_PATH "${CMAKE_INCLUDE_PATH};${hiredis_SOURCE_DIR}")
-set(HIREDIS_HEADER "${hiredis_SOURCE_DIR}/..")
-set(HIREDIS_LIB "${hiredis_BINARY_DIR}/libhiredisd.a")
+set(CMAKE_INCLUDE_PATH  "${CMAKE_INCLUDE_PATH};${hiredis_SOURCE_DIR}")
+set(HIREDIS_HEADER 		"${hiredis_SOURCE_DIR}/..")
+
+if(BUILD_SHARED_LIB)
+	set(Boost_USE_STATIC_LIBS OFF)
+	set(REDIS_PLUS_PLUS_BUILD_SHARED ON)
+	set(HIREDIS_LIB "${hiredis_BINARY_DIR}/libhiredisd.so")
+else()
+	set(Boost_USE_STATIC_LIBS ON)
+	set(REDIS_PLUS_PLUS_BUILD_SHARED OFF)
+	set(HIREDIS_LIB "${hiredis_BINARY_DIR}/libhiredisd.a")
+endif()
 
 # # ... include your own source files here.
 
@@ -84,15 +89,6 @@ add_subdirectory(app)
 add_subdirectory(test EXCLUDE_FROM_ALL)
 
 
-#### INSTALL PART ####
-install(
-	TARGETS
-		fancy-gui
-		server
-		client
-	RUNTIME
-		DESTINATION bin
-)
 
 # Устанавливаем папку для установки .so файлов
 if(BUILD_SHARED_LIB)
@@ -101,8 +97,11 @@ if(BUILD_SHARED_LIB)
 			fancy-version
 			fancy-cli
 			fancy-ser
+			redis++
+			hiredis
 		LIBRARY
 			DESTINATION lib
+		COMPONENT libraries
 	)
 	set(PACKAGE_NAME_TO_RELEASE "${PROJECT_NAME}-shared")
 else()
@@ -111,13 +110,15 @@ endif()
 
 install(
 	TARGETS
-		fancy-app
+		fancy_client
+		fancy_server
 	RUNTIME
 		DESTINATION bin
 	PERMISSIONS
 		OWNER_EXECUTE OWNER_WRITE OWNER_READ
-		GROUP_EXECUTE			 GROUP_READ
+		GROUP_EXECUTE			  GROUP_READ
 		WORLD_EXECUTE
+	COMPONENT applications
 )
 
 set(CPACK_PACKAGE_NAME ${PACKAGE_NAME_TO_RELEASE})

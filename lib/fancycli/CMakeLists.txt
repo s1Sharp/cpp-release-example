@@ -40,7 +40,12 @@ target_include_directories(
 )
 
 # Link the spdlog library to your library
-target_link_libraries(${LIBRARY_NAME} ${Boost_LIBRARIES} spdlog::spdlog cli::cli)
+target_link_libraries(${LIBRARY_NAME}
+	PRIVATE
+		${Boost_LIBRARIES}
+		spdlog::spdlog
+		cli::cli
+)
 
 
 ### this one no need to include, we do application delivery, not shared libraries

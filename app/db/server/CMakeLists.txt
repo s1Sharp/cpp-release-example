@@ -1,16 +1,17 @@
 cmake_minimum_required(VERSION 3.13)
 
-set(EXECUTABLE_NAME server)
-
-include_directories(
-	${CMAKE_CURRENT_SOURCE_DIR}
-)
+set(EXECUTABLE_NAME fancy_server)
 
 set(SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
+
+target_include_directories(${EXECUTABLE_NAME}
+	PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 set_target_properties(
 		${EXECUTABLE_NAME}
@@ -19,9 +20,11 @@ set_target_properties(
 		CXX_STANDARD_REQUIRED ON
 )
 
-target_link_libraries(${EXECUTABLE_NAME} fancy-ser
-	${Boost_LIBRARIES}
-	spdlog::spdlog
-	redis++::redis++_static
-	hiredis::hiredis_static
+target_link_libraries(${EXECUTABLE_NAME}
+	PRIVATE
+		fancy-ser
+		${Boost_LIBRARIES}
+		spdlog::spdlog
+		redis++::redis++_static
+		hiredis::hiredis_static
 )
