@@ -1,4 +1,35 @@
-# # Настраиваем CPack
+# Now you can install the targets, including libhiredisd_shared
+install(
+    TARGETS
+        fancy-version
+        fancy-cli
+        fancy-ser
+        hiredis
+        redis++
+    LIBRARY
+        DESTINATION lib
+    COMPONENT libraries
+)
+
+install(
+	TARGETS
+		fancy_client
+		fancy_server
+	RUNTIME
+		DESTINATION bin
+	PERMISSIONS
+		OWNER_EXECUTE OWNER_WRITE OWNER_READ
+		GROUP_EXECUTE			  GROUP_READ
+		WORLD_EXECUTE
+	COMPONENT applications
+)
+
+set(PACKAGE_NAME_TO_RELEASE "${PROJECT_NAME}-shared")
+
+set(CPACK_PACKAGE_NAME ${PACKAGE_NAME_TO_RELEASE})
+
+
+# Настраиваем CPack
 set(CPACK_GENERATOR DEB)
 
 set(CPACK_DEBIAN_PACKAGE_INCLUDE_IN_DEBUG FALSE)

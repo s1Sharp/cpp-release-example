@@ -6,7 +6,9 @@ set(SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 
-add_executable(${EXECUTABLE_NAME} ${SOURCES})
+add_executable(${EXECUTABLE_NAME}
+	${SOURCES}
+)
 
 target_include_directories(${EXECUTABLE_NAME}
 	PRIVATE
@@ -20,11 +22,24 @@ set_target_properties(
 		CXX_STANDARD_REQUIRED ON
 )
 
-target_link_libraries(${EXECUTABLE_NAME}
-	PRIVATE
-		fancy-ser
-		${Boost_LIBRARIES}
-		spdlog::spdlog
-		redis++::redis++_static
-		hiredis::hiredis_static
-)
+if(BUILD_SHARED_LIB)
+	target_link_libraries(${EXECUTABLE_NAME}
+		PRIVATE
+			fancy-ser
+			${Boost_LIBRARIES}
+			spdlog::spdlog
+			redis++::redis++
+			hiredis::hiredis
+	)
+else()
+	target_link_libraries(${EXECUTABLE_NAME}
+		PRIVATE
+			fancy-ser
+			${Boost_LIBRARIES}
+			spdlog::spdlog
+			redis++::redis++_static
+			hiredis::hiredis_static
+	)
+endif()
+
+

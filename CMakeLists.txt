@@ -40,20 +40,20 @@ FetchContent_MakeAvailable(cli)
 
 # Download Hiredis, upon which Redis Plus Plus depends.
 FetchContent_Declare(
-  hiredis
-  GIT_REPOSITORY https://github.com/redis/hiredis
-  GIT_TAG        v1.1.0
-  SOURCE_DIR     hiredis
+	hiredis
+	GIT_REPOSITORY https://github.com/redis/hiredis
+	GIT_TAG        v1.1.0
+	SOURCE_DIR     hiredis
 )
 
 FetchContent_MakeAvailable(hiredis)
 
 # Download the Redis binding.
 FetchContent_Declare(
-  redis_plus_plus
-  GIT_REPOSITORY https://github.com/sewenew/redis-plus-plus
-  GIT_TAG        1.3.8
-  SOURCE_DIR     redis-plus-plus
+	redis_plus_plus
+	GIT_REPOSITORY https://github.com/sewenew/redis-plus-plus
+	GIT_TAG        1.3.8
+	SOURCE_DIR     redis-plus-plus
 )
 
 set(REDIS_PLUS_PLUS_CXX_STANDARD 17)
@@ -62,12 +62,15 @@ set(REDIS_PLUS_PLUS_BUILD_TEST OFF)
 set(CMAKE_INCLUDE_PATH  "${CMAKE_INCLUDE_PATH};${hiredis_SOURCE_DIR}")
 set(HIREDIS_HEADER 		"${hiredis_SOURCE_DIR}/..")
 
+
 if(BUILD_SHARED_LIB)
 	set(Boost_USE_STATIC_LIBS OFF)
+	set(REDIS_PLUS_PLUS_BUILD_STATIC OFF)
 	set(REDIS_PLUS_PLUS_BUILD_SHARED ON)
-	set(HIREDIS_LIB "${hiredis_BINARY_DIR}/libhiredisd.so")
+	set(HIREDIS_LIB "${hiredis_BINARY_DIR}/libhiredis.so")
 else()
 	set(Boost_USE_STATIC_LIBS ON)
+	set(REDIS_PLUS_PLUS_BUILD_STATIC ON)
 	set(REDIS_PLUS_PLUS_BUILD_SHARED OFF)
 	set(HIREDIS_LIB "${hiredis_BINARY_DIR}/libhiredisd.a")
 endif()
@@ -89,40 +92,11 @@ add_subdirectory(app)
 add_subdirectory(test EXCLUDE_FROM_ALL)
 
 
-
-# Устанавливаем папку для установки .so файлов
-if(BUILD_SHARED_LIB)
-	install(
-		TARGETS
-			fancy-version
-			fancy-cli
-			fancy-ser
-			redis++
-			hiredis
-		LIBRARY
-			DESTINATION lib
-		COMPONENT libraries
-	)
-	set(PACKAGE_NAME_TO_RELEASE "${PROJECT_NAME}-shared")
-else()
-	set(PACKAGE_NAME_TO_RELEASE "${PROJECT_NAME}-static")
-endif()
-
-install(
-	TARGETS
-		fancy_client
-		fancy_server
-	RUNTIME
-		DESTINATION bin
-	PERMISSIONS
-		OWNER_EXECUTE OWNER_WRITE OWNER_READ
-		GROUP_EXECUTE			  GROUP_READ
-		WORLD_EXECUTE
-	COMPONENT applications
-)
-
-set(CPACK_PACKAGE_NAME ${PACKAGE_NAME_TO_RELEASE})
-
 # where to find our CMake modules
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(Packing)
+
+if(BUILD_SHARED_LIB)
+	include(PackingShared)
+else()
+	include(PackingStatic)
+endif()

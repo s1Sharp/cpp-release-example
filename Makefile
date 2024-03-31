@@ -1,12 +1,13 @@
 .PHONY: test build
 
 config:
-	cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DREDIS_PLUS_PLUS_BUILD_TEST=OFF -DREDIS_PLUS_PLUS_BUILD_SHARED=OFF -DBUILD_SHARED_LIB=OFF -G Ninja
+	cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DREDIS_PLUS_PLUS_BUILD_TEST=OFF -DREDIS_PLUS_PLUS_BUILD_SHARED=OFF -DREDIS_PLUS_PLUS_BUILD_STATIC=ON -DBUILD_SHARED_LIB=OFF -G Ninja
 
 config_shared:
-	cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DREDIS_PLUS_PLUS_BUILD_TEST=OFF -DREDIS_PLUS_PLUS_BUILD_SHARED=ON -DBUILD_SHARED_LIB=ON -G Ninja
+	cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DREDIS_PLUS_PLUS_BUILD_TEST=OFF -DREDIS_PLUS_PLUS_BUILD_SHARED=ON -DREDIS_PLUS_PLUS_BUILD_STATIC=OFF -DBUILD_SHARED_LIB=ON -G Ninja
 
 build_shared: config_shared
+	cmake --build ./build --target hiredis --config Release
 	cmake --build ./build --target all --config Release
 
 build: config
