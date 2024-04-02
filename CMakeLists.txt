@@ -13,6 +13,7 @@ set(OS_SYSTEM_NAME "linux-dev" CACHE INTERNAL "name of the system")
 
 # Опция для сборки shared библиотеки
 option(BUILD_SHARED_LIB "Build shared library" OFF)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 project(
@@ -23,10 +24,16 @@ project(
 		LANGUAGES CXX
 )
 
-find_package(Boost REQUIRED system thread)
-find_package(spdlog REQUIRED)
 
 include(FetchContent)
+
+# Загрузка и сборка библиотеки spdlog
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG        v1.13.0
+)
+FetchContent_MakeAvailable(spdlog)
 
 # Загрузка и сборка библиотеки CLI
 FetchContent_Declare(
@@ -64,11 +71,13 @@ set(HIREDIS_HEADER 		"${hiredis_SOURCE_DIR}/..")
 
 
 if(BUILD_SHARED_LIB)
+	set(SPDLOG_BUILD_SHARED ON)
 	set(Boost_USE_STATIC_LIBS OFF)
 	set(REDIS_PLUS_PLUS_BUILD_STATIC OFF)
 	set(REDIS_PLUS_PLUS_BUILD_SHARED ON)
 	set(HIREDIS_LIB "${hiredis_BINARY_DIR}/libhiredis.so")
 else()
+	set(SPDLOG_BUILD_SHARED OFF)
 	set(Boost_USE_STATIC_LIBS ON)
 	set(REDIS_PLUS_PLUS_BUILD_STATIC ON)
 	set(REDIS_PLUS_PLUS_BUILD_SHARED OFF)
@@ -86,6 +95,7 @@ endif()
 
 FetchContent_MakeAvailable(redis_plus_plus)
 
+find_package(Boost REQUIRED system thread)
 
 add_subdirectory(lib)
 add_subdirectory(app)
