@@ -72,7 +72,7 @@ else()
 	set(Boost_USE_STATIC_LIBS ON)
 	set(REDIS_PLUS_PLUS_BUILD_STATIC ON)
 	set(REDIS_PLUS_PLUS_BUILD_SHARED OFF)
-	set(HIREDIS_LIB "${hiredis_BINARY_DIR}/libhiredisd.a")
+	set(HIREDIS_LIB "${hiredis_BINARY_DIR}/libhiredis.a")
 endif()
 
 # # ... include your own source files here.

@@ -23,10 +23,32 @@ target_include_directories(${EXECUTABLE_NAME}
 		${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(${EXECUTABLE_NAME} 
+if(BUILD_SHARED_LIB)
+	target_link_libraries(${EXECUTABLE_NAME} 
+		PRIVATE
+			fancy-cli
+			${Boost_LIBRARIES}
+			spdlog::spdlog
+			cli::cli
+	)
+else()
+	set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_SEARCH_START_STATIC ON)
+	set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_SEARCH_END_STATIC ON)
+
+	target_link_options(
+		${EXECUTABLE_NAME}
 	PRIVATE
-		fancy-cli
-		${Boost_LIBRARIES}
-		spdlog::spdlog
-		cli::cli
-)
+		-static-libgcc
+		-static-libstdc++
+		-lc
+		-static
+	)
+
+	target_link_libraries(${EXECUTABLE_NAME} 
+		PRIVATE
+			fancy-cli
+			${Boost_LIBRARIES}
+			spdlog::spdlog
+			cli::cli
+	)
+endif()

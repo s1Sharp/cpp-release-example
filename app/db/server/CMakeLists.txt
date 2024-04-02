@@ -32,6 +32,18 @@ if(BUILD_SHARED_LIB)
 			hiredis::hiredis
 	)
 else()
+	set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_SEARCH_START_STATIC ON)
+	set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_SEARCH_END_STATIC ON)
+
+	target_link_options(
+		${EXECUTABLE_NAME}
+	PRIVATE
+		-static-libgcc
+		-static-libstdc++
+		-lc
+		-static
+	)
+
 	target_link_libraries(${EXECUTABLE_NAME}
 		PRIVATE
 			fancy-ser
@@ -41,5 +53,3 @@ else()
 			hiredis::hiredis_static
 	)
 endif()
-
-
